@@ -1,6 +1,6 @@
 import numpy as np
 from math import ceil
-from mido import MidiFile
+from mido import MidiFile, MidiTrack, Message
 
 SELECTED_CHANNEL = 1
 MSECS_PER_FRAME = 10
@@ -29,6 +29,17 @@ def to_absolute_time(messages):
         new_msg = msg.copy(time=accumulated_time)
         messages_abs_time.append(new_msg)
     return messages_abs_time
+
+
+def to_delta_time(messages):
+    messages_detlta_time = []
+    for i in range(len(message) - 1, 0, -1):
+        curr_message_time = messages[i].time
+        prev_message_time = messages[i-1].time
+        new_message = messages[i].copy(
+            time=curr_message_time - prev_message_time)
+        messages_detlta_time.append(new_message)
+    return messages_detlta_time
 
 
 def filter_channel(channel_n, messages):
@@ -98,10 +109,10 @@ def total_encode(raw_numpy):
     transforms 
     [[note, velocity, time], ...]   (n_of_notes x 3)
     to
-    [[one_hot_encoded_note, velocity], ...] (n_of_frames x (one_hot_encoded_note + velocity))
+    [[one_hot_encoded_note, velocities], ...] (n_of_frames x (one_hot_encoded_note + velocities))
     """
     NUM_NOTES = 128
-    NUM_VELOCITY = 1
+    NUM_VELOCITY = 128
     n_of_frames = raw_numpy[-1, -1]
     encoded = np.zeros((n_of_frames, NUM_NOTES + NUM_VELOCITY))
     for note, velocity, time in raw_numpy:
@@ -109,9 +120,37 @@ def total_encode(raw_numpy):
             encoded[time:, note] = 0
         else:
             encoded[time:, note] = 1
-            encoded[time:, -1] = velocity / 128
+            encoded[time:, NUM_NOTES + note] = velocity / 128
 
     return encoded
+
+
+def total_decode(encoded_numpy):
+    NUM_NOTES = 128
+    NUM_VELOCITY = 128
+    messages = []
+
+    # handle first frame
+    notes_on = np.argwhere(encoded_numpy[0, :] == 1).flatten()
+    for note in notes_on:
+        messages.append(Message('note_on', note=note,
+                                velocity=encoded_numpy[0, NUM_NOTES + note], time=0))
+
+    for i in range(1, len(encoded_numpy)):
+        prev_frame = encoded_numpy[i-1]
+        curr_frame = encoded_numpy[i]
+        diff = curr_frame - prev_frame
+        diff_notes = diff[:NUM_NOTES]
+        notes_on = np.argwhere(diff_notes == 1).flatten()
+        notes_off = np.argwhere(diff_notes == -1).flatten()
+        for note in notes_on:
+            messages.append(Message(
+                'note_on', note=note, velocity=curr_frame[NUM_NOTES + note] * 128, time=i * MSECS_PER_FRAME))
+        for note in noted_off:
+            messages.append(Message('note_on', note=note,
+                                    velocity=0, time=i * MSECS_PER_FRAME))
+
+    return messages
 
 
 def pipe(track):
@@ -127,9 +166,24 @@ def pipe(track):
     )(track)
 
 
+def messages_to_midifile(messages):
+    mid = MidiFile(ticks_per_beat=50)
+    track = MidiTrack()
+    for msg in messages:
+        track.append(msg)
+    return mid
+
+
+def pipe_reverse(raw_numpy):
+    return compose(
+        total_decode,
+        to_delta_time,
+    )(raw_numpy)
+
+
 if __name__ == '__main__':
-    mid = MidiFile(
-        'D:\Programowanie\Datasets\MIDI\pop_midi_dataset_ismir\midis\Guitar_midkar.com_MIDIRip\jazz\\take_5_jh.mid')
-    all_messages = [msg for msg in mid]
-    res = pipe(all_messages)
-    print(res)
+    # mid = MidiFile(
+    #     'D:\Programowanie\Datasets\MIDI\pop_midi_dataset_ismir\midis\Guitar_midkar.com_MIDIRip\jazz\\take_5_jh.mid')
+    # all_messages = [msg for msg in mid]
+    # res = pipe(all_messages)
+    # print(res)
