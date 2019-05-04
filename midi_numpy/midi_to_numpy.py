@@ -106,9 +106,7 @@ def pipe(track):
         secs_to_msecs,
         to_absolute_time,
         filter_meta,
-        # lambda x: filter_channel(SELECTED_CHANNEL, x),
         to_raw_numpy,
-        debug,
         msecs_to_frames,
         total_encode,
     )(track)
@@ -116,12 +114,20 @@ def pipe(track):
 
 if __name__ == '__main__':
     arguments = sys.argv[1:]
-    if len(arguments) == 0:
+
+    if len(arguments) < 1:
         raise Exception('Please specify file path')
     midi_path = arguments[0]
-    output_path = arguments[1] if len(arguments) > 1 else 'a.csv'
+
+    if len(arguments) < 2 or ('csv' not in arguments[1] and 'npy' not in arguments[1]):
+        raise Exception('Invalid output path')
+    output_path = arguments[1]
 
     mid = MidiFile(midi_path)
     messages = [msg for msg in mid]
     res = pipe(messages)
-    np.savetxt(output_path, res, delimiter=",", fmt='%i')
+
+    if 'csv' in output_path:
+        np.savetxt(output_path, res, delimiter=",", fmt='%i')
+    elif 'npy' in output_path:
+        np.save(output_path, res.astype(np.int8))
