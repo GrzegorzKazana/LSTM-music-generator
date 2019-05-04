@@ -113,8 +113,8 @@ def pipe(track):
 
 
 if __name__ == '__main__':
+    # parsing arguments
     arguments = sys.argv[1:]
-
     if len(arguments) < 1:
         raise Exception('Please specify file path')
     midi_path = arguments[0]
@@ -123,10 +123,12 @@ if __name__ == '__main__':
         raise Exception('Invalid output path')
     output_path = arguments[1]
 
+    # actual processing happens here
     mid = MidiFile(midi_path)
     messages = [msg for msg in mid]
     res = pipe(messages)
 
+    # saving file
     if 'csv' in output_path:
         np.savetxt(output_path, res, delimiter=",", fmt='%i')
     elif 'npy' in output_path:

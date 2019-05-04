@@ -70,13 +70,13 @@ def messages_to_midifile(messages):
 def pipe_reverse(raw_numpy):
     return compose(
         total_decode,
-        # debug,
         to_delta_time,
         messages_to_midifile
     )(raw_numpy)
 
 
 if __name__ == '__main__':
+    # parsing arguments
     arguments = sys.argv[1:]
     if len(arguments) < 1 or ('csv' not in arguments[0] and 'npy' not in arguments[0]):
         raise Exception('Please specify valid file path')
@@ -86,10 +86,12 @@ if __name__ == '__main__':
         raise Exception('Invalid output path')
     output_path = arguments[1]
 
+    # reading file
     if 'csv' in input_path:
         raw_numpy = np.loadtxt(input_path, delimiter=",", dtype=np.int32)
     elif 'npy' in input_path:
         raw_numpy = np.load(input_path).astype(np.int32)
-    mid = pipe_reverse(raw_numpy)
 
+    # processing and save
+    mid = pipe_reverse(raw_numpy)
     mid.save(output_path)
