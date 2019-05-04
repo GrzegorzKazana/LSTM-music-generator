@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from scipy import sparse
 from math import ceil
 from mido import MidiFile, MidiTrack, Message
 from common import MSECS_PER_FRAME, NUM_NOTES, NUM_VELOCITY, compose, debug
@@ -115,11 +116,15 @@ def pipe(track):
 if __name__ == '__main__':
     # parsing arguments
     arguments = sys.argv[1:]
-    if len(arguments) < 1:
+    if len(arguments) < 1 or ('.mid' not in arguments[0] and '.midi' not in arguments[0]):
         raise Exception('Please specify file path')
     midi_path = arguments[0]
 
-    if len(arguments) < 2 or ('csv' not in arguments[1] and 'npy' not in arguments[1]):
+    if len(arguments) < 2 or (
+        '.csv' not in arguments[1] and
+        '.npy' not in arguments[1] and
+        '.npz' not in arguments[1]
+    ):
         raise Exception('Invalid output path')
     output_path = arguments[1]
 
@@ -129,7 +134,15 @@ if __name__ == '__main__':
     res = pipe(messages)
 
     # saving file
-    if 'csv' in output_path:
+    if '.csv' in output_path:
         np.savetxt(output_path, res, delimiter=",", fmt='%i')
-    elif 'npy' in output_path:
+        print(f'Saved to: {output_path}')
+    elif '.npy' in output_path:
         np.save(output_path, res.astype(np.int8))
+        print(f'Saved to: {output_path}')
+    elif '.npz' in output_path:
+        res_sparse = sparse.coo_matrix(res)
+        sparsity_factor = 1 - (res_sparse.getnnz() / res.size)
+        sparse.save_npz(output_path, res_sparse)
+        print(
+            f'Saved to: {output_path}, {int(100 * sparsity_factor)}% sparsity')
