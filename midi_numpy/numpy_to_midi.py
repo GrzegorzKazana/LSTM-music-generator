@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import random
+from scipy import sparse
 from math import ceil
 from mido import MidiFile, MidiTrack, Message, MetaMessage
 from common import MSECS_PER_FRAME, NUM_NOTES, NUM_VELOCITY, DEFAULT_BPM, compose, debug
@@ -78,11 +79,15 @@ def pipe_reverse(raw_numpy):
 if __name__ == '__main__':
     # parsing arguments
     arguments = sys.argv[1:]
-    if len(arguments) < 1 or ('csv' not in arguments[0] and 'npy' not in arguments[0]):
+    if len(arguments) < 1 or (
+        '.csv' not in arguments[0] and
+        '.npy' not in arguments[0] and
+        '.npz' not in arguments[0]
+    ):
         raise Exception('Please specify valid file path')
     input_path = arguments[0]
 
-    if len(arguments) < 2 or ('mid' not in arguments[1] and 'midi' not in arguments[1]):
+    if len(arguments) < 2 or ('.mid' not in arguments[1] and '.midi' not in arguments[1]):
         raise Exception('Invalid output path')
     output_path = arguments[1]
 
@@ -91,6 +96,9 @@ if __name__ == '__main__':
         raw_numpy = np.loadtxt(input_path, delimiter=",", dtype=np.int32)
     elif 'npy' in input_path:
         raw_numpy = np.load(input_path).astype(np.int32)
+    elif 'npz' in input_path:
+        sparse_numpy = sparse.load_npz(input_path)
+        raw_numpy = sparse_numpy.toarray().astype(np.int32)
 
     # processing and save
     mid = pipe_reverse(raw_numpy)
