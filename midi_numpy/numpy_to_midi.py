@@ -1,10 +1,9 @@
 import sys
 import numpy as np
 import random
-from scipy import sparse
 from math import ceil
 from mido import MidiFile, MidiTrack, Message, MetaMessage
-from common import MSECS_PER_FRAME, NUM_NOTES, NUM_VELOCITY, DEFAULT_BPM, compose, debug
+from common import MSECS_PER_FRAME, NUM_NOTES, NUM_VELOCITY, DEFAULT_BPM, compose, debug, read_numpy_midi
 
 
 def to_delta_time(messages):
@@ -92,13 +91,7 @@ if __name__ == '__main__':
     output_path = arguments[1]
 
     # reading file
-    if 'csv' in input_path:
-        raw_numpy = np.loadtxt(input_path, delimiter=",", dtype=np.int32)
-    elif 'npy' in input_path:
-        raw_numpy = np.load(input_path).astype(np.int32)
-    elif 'npz' in input_path:
-        sparse_numpy = sparse.load_npz(input_path)
-        raw_numpy = sparse_numpy.toarray().astype(np.int32)
+    raw_numpy = read_numpy_midi(input_path)
 
     # processing and save
     mid = pipe_reverse(raw_numpy)
