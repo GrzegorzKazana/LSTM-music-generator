@@ -32,20 +32,20 @@ def read_numpy_midi(input_path):
     if 'csv' in input_path:
         return np.loadtxt(input_path, delimiter=",", dtype=np.int32)
     elif 'npy' in input_path:
-        return np.load(input_path).astype(np.int32)
+        return np.load(input_path)
     elif 'npz' in input_path:
         sparse_numpy = sparse.load_npz(input_path)
-        return sparse_numpy.toarray().astype(np.int32)
+        return sparse_numpy.toarray()
 
 
 def save_numpy_midi(output_path, res):
     import numpy as np
     from scipy import sparse
     if '.csv' in output_path:
-        np.savetxt(output_path, res, delimiter=",", fmt='%i')
+        np.savetxt(output_path, res, delimiter=",")
         print(f'Saved to: {output_path}')
     elif '.npy' in output_path:
-        np.save(output_path, res.astype(np.int8))
+        np.save(output_path, res)
         print(f'Saved to: {output_path}')
     elif '.npz' in output_path:
         res_sparse = sparse.coo_matrix(res)
