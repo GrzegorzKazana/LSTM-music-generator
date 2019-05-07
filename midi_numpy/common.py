@@ -32,10 +32,10 @@ def read_numpy_midi(input_path):
     if 'csv' in input_path:
         return np.loadtxt(input_path, delimiter=",", dtype=np.int32)
     elif 'npy' in input_path:
-        return np.load(input_path)
+        return np.load(input_path).astype(np.float32)
     elif 'npz' in input_path:
         sparse_numpy = sparse.load_npz(input_path)
-        return sparse_numpy.toarray()
+        return sparse_numpy.toarray().astype(np.float32)
 
 
 def save_numpy_midi(output_path, res):

@@ -47,7 +47,7 @@ def total_decode(encoded_numpy):
         for note in notes_on:
             time = i * MSECS_PER_FRAME
             messages.append(Message(
-                'note_on', note=note, velocity=curr_frame[NUM_NOTES + note] * 128, time=time))
+                'note_on', note=note, velocity=int(curr_frame[NUM_NOTES + note] * 128), time=time))
         for note in notes_off:
             time = i * MSECS_PER_FRAME
             messages.append(Message('note_on', note=note,

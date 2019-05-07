@@ -59,7 +59,7 @@ def to_raw_numpy(messages):
     encodes all messages,
     and converts it to numpy array
     """
-    return np.array([encode_message(msg) for msg in messages])
+    return np.array([encode_message(msg) for msg in messages], dtype=np.float32)
 
 
 def msecs_to_frames(raw_numpy):
@@ -88,14 +88,16 @@ def total_encode(raw_numpy):
     to
     [[one_hot_encoded_note, velocities], ...] (n_of_frames x (one_hot_encoded_note + velocities))
     """
-    n_of_frames = raw_numpy[-1, -1]
+    n_of_frames = int(raw_numpy[-1, -1])
     encoded = np.zeros((n_of_frames, NUM_NOTES + NUM_VELOCITY))
     for note, velocity, time in raw_numpy:
+        note_int = int(note)
+        time_int = int(time)
         if velocity == 0:
-            encoded[time:, note] = 0
+            encoded[time_int:, note_int] = 0
         else:
-            encoded[time:, note] = 1
-            encoded[time:, NUM_NOTES + note] = velocity / 128
+            encoded[time_int:, note_int] = 1
+            encoded[time_int:, NUM_NOTES + note_int] = velocity / 128
 
     return encoded
 
