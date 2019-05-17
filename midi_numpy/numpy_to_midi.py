@@ -3,7 +3,10 @@ import numpy as np
 import random
 from math import ceil
 from mido import MidiFile, MidiTrack, Message, MetaMessage
-from common import MSECS_PER_FRAME, NUM_NOTES, NUM_VELOCITY, DEFAULT_BPM, compose, debug, read_numpy_midi
+if __name__ == '__main__':
+    from common import MSECS_PER_FRAME, NUM_NOTES, NUM_VELOCITY, DEFAULT_BPM, compose, debug, read_numpy_midi
+else:
+    from .common import MSECS_PER_FRAME, NUM_NOTES, NUM_VELOCITY, DEFAULT_BPM, compose, debug, read_numpy_midi
 
 
 def to_delta_time(messages):
@@ -31,10 +34,12 @@ def total_decode(encoded_numpy):
     """
     messages = []
     # handle first frame
-    notes_on = np.argwhere(encoded_numpy[0, :] == 1).flatten()
+    notes_on = np.argwhere(encoded_numpy[0, :NUM_NOTES] == 1).flatten()
     for note in notes_on:
+        print(note)
+        print(int(encoded_numpy[0, NUM_NOTES + note] * 128))
         messages.append(Message('note_on', note=note,
-                                velocity=encoded_numpy[0, NUM_NOTES + note], time=0))
+                                velocity=int(encoded_numpy[0, NUM_NOTES + note] * 128), time=0))
 
     for i in range(1, len(encoded_numpy)):
         prev_frame = encoded_numpy[i-1]
