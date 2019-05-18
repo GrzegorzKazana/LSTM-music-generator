@@ -36,10 +36,9 @@ def total_decode(encoded_numpy):
     # handle first frame
     notes_on = np.argwhere(encoded_numpy[0, :NUM_NOTES] == 1).flatten()
     for note in notes_on:
-        print(note)
-        print(int(encoded_numpy[0, NUM_NOTES + note] * 128))
+        vel = int(encoded_numpy[0, NUM_NOTES + note] * 128) if encoded_numpy.shape[1] > 128 else 127
         messages.append(Message('note_on', note=note,
-                                velocity=int(encoded_numpy[0, NUM_NOTES + note] * 128), time=0))
+                                velocity=vel, time=0))
 
     for i in range(1, len(encoded_numpy)):
         prev_frame = encoded_numpy[i-1]
@@ -51,8 +50,9 @@ def total_decode(encoded_numpy):
 
         for note in notes_on:
             time = i * MSECS_PER_FRAME
+            vel = int(curr_frame[NUM_NOTES + note] * 128) if curr_frame.shape[1] > 128 else 127
             messages.append(Message(
-                'note_on', note=note, velocity=int(curr_frame[NUM_NOTES + note] * 128), time=time))
+                'note_on', note=note, velocity=vel, time=time))
         for note in notes_off:
             time = i * MSECS_PER_FRAME
             messages.append(Message('note_on', note=note,
