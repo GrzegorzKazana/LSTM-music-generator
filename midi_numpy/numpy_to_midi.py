@@ -50,7 +50,7 @@ def total_decode(encoded_numpy):
 
         for note in notes_on:
             time = i * MSECS_PER_FRAME
-            vel = int(curr_frame[NUM_NOTES + note] * 128) if curr_frame.shape[1] > 128 else 127
+            vel = int(curr_frame[NUM_NOTES + note] * 128) if curr_frame.shape[0] > 128 else 127
             messages.append(Message(
                 'note_on', note=note, velocity=vel, time=time))
         for note in notes_off:
