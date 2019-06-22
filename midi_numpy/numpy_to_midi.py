@@ -36,7 +36,8 @@ def total_decode(encoded_numpy):
     # handle first frame
     notes_on = np.argwhere(encoded_numpy[0, :NUM_NOTES] == 1).flatten()
     for note in notes_on:
-        vel = int(encoded_numpy[0, NUM_NOTES + note] * 128) if encoded_numpy.shape[1] > 128 else 127
+        vel = int(encoded_numpy[0, NUM_NOTES + note] *
+                  128) if encoded_numpy.shape[1] > 128 else 127
         messages.append(Message('note_on', note=note,
                                 velocity=vel, time=0))
 
@@ -50,7 +51,8 @@ def total_decode(encoded_numpy):
 
         for note in notes_on:
             time = i * MSECS_PER_FRAME
-            vel = int(curr_frame[NUM_NOTES + note] * 128) if curr_frame.shape[0] > 128 else 127
+            vel = int(curr_frame[NUM_NOTES + note] *
+                      128) if curr_frame.shape[0] > 128 else 127
             messages.append(Message(
                 'note_on', note=note, velocity=vel, time=time))
         for note in notes_off:
@@ -88,7 +90,7 @@ if __name__ == '__main__':
         '.npy' not in arguments[0] and
         '.npz' not in arguments[0]
     ):
-        raise Exception('Please specify valid file path')
+        raise Exception('Please specify valid file path' + arguments[0])
     input_path = arguments[0]
 
     if len(arguments) < 2 or ('.mid' not in arguments[1] and '.midi' not in arguments[1]):

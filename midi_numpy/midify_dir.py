@@ -22,7 +22,7 @@ if __name__ == '__main__':
     for fn in file_names:
         input_file_path = f'{input_dir}\\{fn}'
         output_file_name = fn.replace('.csv', '.mid').replace(
-            '.npy', '.mid').replace('.npz', '.mid')
+            '.npy', '.mid').replace('.npz', '.mid').replace(' ', '_')
         output_file_path = f'{output_dir}\\{output_file_name}'
         os.system(
             f'python numpy_to_midi.py {input_file_path} {output_file_path}')
